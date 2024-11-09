@@ -42,3 +42,17 @@ pip-log.txt
 
 # PyCharm
 .idea/
+
+# Virtual Environments
+.env
+env/
+venv/
+.venv
+venv/
+.venv/
+
+# Ignore Ignores
+.ignore*
+
+# Pycache
+__pycache__*
