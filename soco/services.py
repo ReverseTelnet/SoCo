@@ -557,6 +557,21 @@ class Service:
         </s:Envelope>"""
         return custom_streaming_url_meta_template
 
+    def add_custom_streaming_url_as_favorite(self, action, title, uri, description, args=None, **kwargs):
+        """Adds a Custom Streaming URL to Sonos Favorites in the Desktop Application"""
+        timeout = kwargs.pop("timeout", config.REQUEST_TIMEOUT)
+        headers, _ = self.build_command(
+            action, args
+        )  # Existing Args Doesn't Work for this Body Type, so Sending None.
+        custom_streaming_url_meta_template = self.build_custom_streaming_body(title, uri, description)
+        response = requests.post(
+            self.base_url + self.control_url,
+            headers=headers,
+            data=custom_streaming_url_meta_template.encode("utf-8"),
+            timeout=timeout,
+        )
+        return response
+
     def handle_upnp_error(self, xml_error):
         """Disect a UPnP error, and raise an appropriate exception.
 
