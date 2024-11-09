@@ -519,6 +519,44 @@ class Service:
             response.raise_for_status()
         return None
 
+    def build_custom_streaming_body(
+        self,
+        title,
+        uri,
+        description,
+        parent_id="FV:2",
+        item_id="add_item_to_favorites_id",
+        protocol_info="x-rincon-mp3radio:*:audio/x-rincon-mp3radio:*",
+        service_type="SA_RINCON65031_",
+    ):
+        """
+        Creates the Request Payload to Add A Custom Streaming URL as a Sonos Favorite.
+        Defaults to Using Tune In (Old) as the Service Type, Protocol, and Description
+        """
+        custom_streaming_url_meta_template = f"""<s:Envelope
+            xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
+            <s:Body>
+                <u:CreateObject
+                    xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1">
+                    <ContainerID>FV:2</ContainerID>
+                    <Elements>&lt;DIDL-Lite
+                        xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot;
+                        xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot;
+                        xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot;
+                        xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;    
+                        &lt;item&gt;&lt;dc:title&gt;{title}&lt;/dc:title&gt;&lt;r:type&gt;instantPlay&lt;/r:type&gt;
+                        &lt;res protocolInfo=&quot;{protocol_info}&quot;&gt;{uri}&lt;/res&gt;
+                        &lt;r:description&gt;{description}&lt;/r:description&gt;&lt;r:resMD&gt;&amp;lt;DIDL-Lite
+                        xmlns:dc=&amp;quot;http://purl.org/dc/elements/1.1/&amp;quot;
+                        xmlns:upnp=&amp;quot;urn:schemas-upnp-org:metadata-1-0/upnp/&amp;quot;
+                        xmlns:r=&amp;quot;urn:schemas-rinconnetworks-com:metadata-1-0/&amp;quot;
+                        xmlns=&amp;quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&amp;quot;&amp;gt;&amp;lt;item id=&amp;quot;{item_id}&amp;quot; parentID=&amp;quot;{parent_id}&amp;quot; restricted=&amp;quot;true&amp;quot;&amp;gt;&amp;lt;dc:title&amp;gt;{title}&amp;lt;/dc:title&amp;gt;&amp;lt;upnp:class&amp;gt;object.item.audioItem.audioBroadcast&amp;lt;/upnp:class&amp;gt;&amp;lt;desc id=&amp;quot;cdudn&amp;quot; nameSpace=&amp;quot;urn:schemas-rinconnetworks-com:metadata-1-0/&amp;quot;&amp;gt;{service_type}&amp;lt;/desc&amp;gt;&amp;lt;/item&amp;gt;&amp;lt;/DIDL-Lite&amp;gt;&lt;/r:resMD&gt;    &lt;/item&gt;\x0a&lt;/DIDL-Lite&gt;
+                    </Elements>
+                </u:CreateObject>
+            </s:Body>
+        </s:Envelope>"""
+        return custom_streaming_url_meta_template
+
     def handle_upnp_error(self, xml_error):
         """Disect a UPnP error, and raise an appropriate exception.
 
