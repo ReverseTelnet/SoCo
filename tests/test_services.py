@@ -10,6 +10,8 @@ from soco.services import Service, Action, Argument, Vartype
 
 from unittest import mock
 
+import xmltodict
+
 # Dummy known-good errors/responses etc.  These are not necessarily valid as
 # actual commands, but are valid XML/UPnP. They also contain unicode characters
 # to test unicode handling.
@@ -241,6 +243,43 @@ def test_build_command(service):
         "Content-Type": 'text/xml; charset="utf-8"',
         "SOAPACTION": "urn:schemas-upnp-org:service:Service:1#SetAVTransportURI",
     }
+
+
+def test_build_custom_streaming_body():
+    """Test Creation of Custom Streaming URL Meta Template"""
+    meta_template = Service.build_custom_streaming_body(
+        "CreateObject",
+        "Deep Space One Title",
+        "x-rincon-mp3radio://http://ice3.somafm.com/deepspaceone-128-mp3",
+        "Whoa! Space is So Huge.",
+    )
+
+    # Simple Tests
+    meta_dictionary = xmltodict.parse(meta_template)
+    container_id = meta_dictionary["s:Envelope"]["s:Body"]["u:CreateObject"][
+        "ContainerID"
+    ]
+    assert container_id == "FV:2"
+
+    # Climbing Down the Tree of Nested XML
+    elements = meta_dictionary["s:Envelope"]["s:Body"]["u:CreateObject"]["Elements"]
+    elements_dictionary = xmltodict.parse(elements)
+
+    # Mid-Level XML Test
+    res_dictionary = elements_dictionary["DIDL-Lite"]["item"]["res"]
+    assert (
+        res_dictionary["#text"]
+        == "x-rincon-mp3radio://http://ice3.somafm.com/deepspaceone-128-mp3"
+    )
+
+    # Deep XML Test
+    resmd_results = elements_dictionary["DIDL-Lite"]["item"]["r:resMD"]
+    resmd_dictionary = xmltodict.parse(resmd_results)
+    resmd_items = resmd_dictionary["DIDL-Lite"]["item"]
+    assert resmd_items["@id"] == "add_item_to_favorites_id"
+    assert resmd_items["@parentID"] == "FV:2"
+    assert resmd_items["dc:title"] == "Deep Space One Title"
+    assert resmd_items["desc"]["#text"] == "SA_RINCON65031_"
 
 
 def test_send_command(service):
