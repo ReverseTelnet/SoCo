@@ -530,9 +530,42 @@ class Service:
         service_type="SA_RINCON65031_",
     ):
         """
-        Creates the Request Payload to Add A Custom Streaming URL as a Sonos Favorite.
-        Defaults to Using Tune In (Old) as the Service Type, Protocol, and Description
+
+        Function Use Case:
+
+
+            Creates the Request Payload to Add A Custom Streaming URL as a Sonos Favorite.
+            Defaults to Using Tune In (Old) as the Service Type, Protocol, and Description.
+
+        
+        Background:
+
+            "add_item_to_favorites_id" was discovered looking at the Official Sonos API. 
+            
+            'https://docs.sonos.com/docs/add-favorites'
+
+            Interesting, the API call on this page mentions a 'PUT' requests.  
+            However, either a 'PUT' or 'POST' requests (which is what is made by the send command) function will work.
+
+
+        Notes:
+
+            if item_id == "R:0/0/0", the favorite is added in the desktop App.
+            It will not be seen in Sonos Favorites on the S2 Mobile App.
+
+            if item_id == "add_item_to_favorites_id", the favorite is added in both the Desktop App and the Mobile App.
+            It can be played in the Desktop App, but it oddly Greyed Out in the Mobile App. 
+
+            Multiple variarations have been tested of "protocol_info" (Sonos API, MP3 Radio) and "service_type" (old and new Tune In) 
+            along with "item_id".  
+            
+            It appears the only way to add a favorite in the Sonos Mobile App is through the Actual (New) TuneIn Application as documented below.             
+            https://en.community.sonos.com/controllers-and-music-services-229131/adding-radio-custom-urls-in-tunein-new-now-that-the-legacy-version-is-gone-in-the-new-controller-6892399
+
+            
         """
+
+
         custom_streaming_url_meta_template = f"""<s:Envelope
             xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/">
             <s:Body>
@@ -555,6 +588,7 @@ class Service:
                 </u:CreateObject>
             </s:Body>
         </s:Envelope>"""
+
         return custom_streaming_url_meta_template
 
     def add_custom_streaming_url_as_favorite(self, action, title, uri, description, args=None, **kwargs):
