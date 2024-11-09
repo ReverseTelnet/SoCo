@@ -282,6 +282,50 @@ def test_build_custom_streaming_body():
     assert resmd_items["desc"]["#text"] == "SA_RINCON65031_"
 
 
+def test_add_custom_streaming_url_as_favorite(service):
+    """Test Adding a Custom Streaing URL as a Favorite"""
+    response = mock.MagicMock()
+    response.encoding = "utf-8"
+    response.headers = {
+        "CONTENT-LENGTH": "2049",
+        "CONTENT-TYPE": 'text/xml; charset="utf-8"',
+        "Connection": "close",
+    }
+    response.text = '<s:Envelope xmlns:s="http://schemas.xmlsoap.org/soap/envelope/" s:encodingStyle="http://schemas.xmlsoap.org/soap/encoding/"><s:Body><u:CreateObjectResponse xmlns:u="urn:schemas-upnp-org:service:ContentDirectory:1"><ObjectID>FV:2/161</ObjectID><Result>&lt;DIDL-Lite xmlns:dc=&quot;http://purl.org/dc/elements/1.1/&quot; xmlns:upnp=&quot;urn:schemas-upnp-org:metadata-1-0/upnp/&quot; xmlns:r=&quot;urn:schemas-rinconnetworks-com:metadata-1-0/&quot; xmlns=&quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&quot;&gt;&lt;item id=&quot;FV:2/161&quot; parentID=&quot;FV:2&quot; restricted=&quot;false&quot;&gt;&lt;dc:title&gt;Deep Space One Title&lt;/dc:title&gt;&lt;upnp:class&gt;object.itemobject.item.sonos-favorite&lt;/upnp:class&gt;&lt;r:ordinal&gt;3&lt;/r:ordinal&gt;&lt;res protocolInfo=&quot;x-rincon-mp3radio:*:audio/x-rincon-mp3radio:*&quot;&gt;x-rincon-mp3radio://http://ice3.somafm.com/deepspaceone-128-mp3&lt;/res&gt;&lt;r:type&gt;instantPlay&lt;/r:type&gt;&lt;r:description&gt;Whoa! Space is So Huge.&lt;/r:description&gt;&lt;r:resMD&gt;&amp;lt;DIDL-Lite\n                        xmlns:dc=&amp;quot;http://purl.org/dc/elements/1.1/&amp;quot;\n                        xmlns:upnp=&amp;quot;urn:schemas-upnp-org:metadata-1-0/upnp/&amp;quot;\n                        xmlns:r=&amp;quot;urn:schemas-rinconnetworks-com:metadata-1-0/&amp;quot;\n                        xmlns=&amp;quot;urn:schemas-upnp-org:metadata-1-0/DIDL-Lite/&amp;quot;&amp;gt;&amp;lt;item id=&amp;quot;add_item_to_favorites_id&amp;quot; parentID=&amp;quot;FV:2&amp;quot; restricted=&amp;quot;true&amp;quot;&amp;gt;&amp;lt;dc:title&amp;gt;Deep Space One Title&amp;lt;/dc:title&amp;gt;&amp;lt;upnp:class&amp;gt;object.item.audioItem.audioBroadcast&amp;lt;/upnp:class&amp;gt;&amp;lt;desc id=&amp;quot;cdudn&amp;quot; nameSpace=&amp;quot;urn:schemas-rinconnetworks-com:metadata-1-0/&amp;quot;&amp;gt;SA_RINCON65031_&amp;lt;/desc&amp;gt;&amp;lt;/item&amp;gt;&amp;lt;/DIDL-Lite&amp;gt;&lt;/r:resMD&gt;&lt;/item&gt;&lt;/DIDL-Lite&gt;</Result></u:CreateObjectResponse></s:Body></s:Envelope>'
+    with mock.patch("requests.post", return_value=response) as fake_post:
+        result = service.add_custom_streaming_url_as_favorite(
+            "CreateObject",
+            "Deep Space One Title",
+            "x-rincon-mp3radio://http://ice3.somafm.com/deepspaceone-128-mp3",
+            "Whoa! Space is So Huge.",
+        )
+
+        # Simple Tests
+        assert result.headers["CONTENT-LENGTH"] == "2049"
+        assert result.encoding == "utf-8"
+
+        # Mid-Level XML Test
+        meta_dictionary = xmltodict.parse(result.text)
+        create_object_results = meta_dictionary["s:Envelope"]["s:Body"][
+            "u:CreateObjectResponse"
+        ]["Result"]
+        create_object_dictionary = xmltodict.parse(create_object_results)
+        res_dictionary = create_object_dictionary["DIDL-Lite"]["item"]["res"]
+        assert (
+            res_dictionary["#text"]
+            == "x-rincon-mp3radio://http://ice3.somafm.com/deepspaceone-128-mp3"
+        )
+
+        # Deep XML Test
+        resmd_results = create_object_dictionary["DIDL-Lite"]["item"]["r:resMD"]
+        resmd_dictionary = xmltodict.parse(resmd_results)
+        resmd_items = resmd_dictionary["DIDL-Lite"]["item"]
+        assert resmd_items["@id"] == "add_item_to_favorites_id"
+        assert resmd_items["@parentID"] == "FV:2"
+        assert resmd_items["dc:title"] == "Deep Space One Title"
+        assert resmd_items["desc"]["#text"] == "SA_RINCON65031_"
+
+
 def test_send_command(service):
     """Calling a command should result in a http request, unless the cache is
     hit."""
