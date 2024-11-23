@@ -563,6 +563,14 @@ class Service:
             https://en.community.sonos.com/controllers-and-music-services-229131/adding-radio-custom-urls-in-tunein-new-now-that-the-legacy-version-is-gone-in-the-new-controller-6892399
 
             
+        23 November 2024 Update:
+
+            It is possible to add to Tune In (New) via the API.
+            
+            Using the 'begin_authentication' and 'complete_authentication' methods from the MusicService base case, we can derivce the access tokens.
+            This token can then be passed into the opml.radiotime.com API. 
+
+            It is unclear if the user will have to log into the TuneIn GUI repeatedly.  The access token is only good for 259200 seconds (3 days).
         """
 
 
