@@ -525,7 +525,7 @@ class Service:
         uri,
         description,
         parent_id="FV:2",
-        item_id="add_item_to_favorites_id",
+        item_id="R:0/0/0",
         protocol_info="x-rincon-mp3radio:*:audio/x-rincon-mp3radio:*",
         service_type="SA_RINCON65031_",
     ):
